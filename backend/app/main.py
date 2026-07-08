@@ -1,10 +1,18 @@
 """ZimFree FastAPI app — Busan subway luggage copilot."""
 from __future__ import annotations
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 
-from .routers import assistant, congestion, luggage, route, scenario, stations
+from dotenv import load_dotenv
+
+# Load backend/.env (gitignored) before importing routers/services so that
+# ANTHROPIC_API_KEY / OPENAI_API_KEY / OPENAI_MODEL are available at import time.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+
+from .routers import assistant, congestion, luggage, route, scenario, stations  # noqa: E402
 
 app = FastAPI(title="ZimFree API", version="0.1.0")
 

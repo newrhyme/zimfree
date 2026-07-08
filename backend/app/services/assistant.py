@@ -40,7 +40,7 @@ def active_model() -> str:
         return OPENAI_MODEL
     if p == "anthropic":
         return ANTHROPIC_MODEL
-    return "—"
+    return "none"
 
 
 def _resolve(name_or_code) -> int | None:
