@@ -1,4 +1,5 @@
 node_modules/
+data/raw/
 .venv/
 __pycache__/
 data/processed/
