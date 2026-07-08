@@ -1,0 +1,91 @@
+{
+  "feature_order": [
+    "line",
+    "is_terminal",
+    "is_transfer",
+    "platform_type",
+    "depart_zone",
+    "depart_floor",
+    "arrive_zone",
+    "arrive_floor",
+    "direction"
+  ],
+  "cat_cols": [
+    "line",
+    "is_terminal",
+    "is_transfer",
+    "platform_type",
+    "depart_zone",
+    "depart_floor",
+    "arrive_zone",
+    "arrive_floor",
+    "direction"
+  ],
+  "cat_maps": {
+    "line": {
+      "1": 0,
+      "10": 1,
+      "11": 2,
+      "2": 3,
+      "3": 4,
+      "4": 5,
+      "5": 6,
+      "6": 7,
+      "7": 8,
+      "8": 9,
+      "9": 10
+    },
+    "is_terminal": {
+      "N": 0,
+      "Y": 1
+    },
+    "is_transfer": {
+      "N": 0,
+      "Y": 1
+    },
+    "platform_type": {
+      "상대식": 0,
+      "섬식": 1
+    },
+    "depart_zone": {
+      "지강": 0,
+      "지상": 1,
+      "지하": 2
+    },
+    "depart_floor": {
+      "대함실(1층)": 0,
+      "대합실": 1,
+      "대합실(1층)": 2,
+      "대합실(2층)": 3,
+      "승강장": 4,
+      "역사 외부": 5,
+      "연계시설(부산대병원로비)": 6,
+      "연계시설(육고)": 7,
+      "연계시설(임대시설)": 8
+    },
+    "arrive_zone": {
+      "지상": 0,
+      "지하": 1
+    },
+    "arrive_floor": {
+      "대합실": 0,
+      "대합실(1층)": 1,
+      "대합실(2층)": 2,
+      "승강장": 3,
+      "역사 외부": 4,
+      "연계시설(부산대병원로비)": 5,
+      "연계시설(육고)": 6,
+      "연계시설(임대시설)": 7,
+      "육교층": 8
+    },
+    "direction": {
+      "양방향": 0
+    }
+  },
+  "classes": [
+    "단순",
+    "보통",
+    "복잡",
+    "이동 불가"
+  ]
+}

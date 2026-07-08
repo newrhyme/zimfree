@@ -1,0 +1,16 @@
+{
+  "congestion": {
+    "model": "lightgbm_regressor",
+    "metric": "MAE",
+    "valid_mae": 46.08,
+    "best_iteration": 400,
+    "train_rows": 1634304,
+    "valid_rows": 327936
+  },
+  "route_difficulty": {
+    "model": "lightgbm_classifier",
+    "metric": "macro_f1",
+    "cv_macro_f1": 0.729,
+    "n_rows": 932
+  }
+}
