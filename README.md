@@ -39,8 +39,10 @@ make setup && make data && make train
 # 2) 개발 서버 (backend :8000, frontend :5173)
 make dev
 
-# (선택) AI 어시스턴트 활성화
-export ANTHROPIC_API_KEY=sk-ant-...
+# (선택) AI 어시스턴트 활성화 — 둘 중 하나만 있으면 됨 (OpenAI 우선)
+export OPENAI_API_KEY=sk-...          # GPT (기본 모델 gpt-4o-mini, OPENAI_MODEL로 변경)
+# 또는
+export ANTHROPIC_API_KEY=sk-ant-...   # Claude (claude-sonnet-4-6)
 
 # 3) 테스트 (backend pytest + frontend 빌드)
 make test

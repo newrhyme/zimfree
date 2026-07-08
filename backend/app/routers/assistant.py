@@ -13,7 +13,11 @@ router = APIRouter(prefix="/api", tags=["assistant"])
 
 @router.get("/assistant/status")
 def status():
-    return {"enabled": svc.is_enabled(), "model": svc.MODEL}
+    return {
+        "enabled": svc.is_enabled(),
+        "provider": svc.provider(),
+        "model": svc.active_model(),
+    }
 
 
 @router.post("/assistant/chat")

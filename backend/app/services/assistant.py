@@ -11,7 +11,8 @@ from . import route as route_svc
 from . import scenario as scenario_svc
 from . import stations as stations_svc
 
-MODEL = "claude-sonnet-4-6"
+ANTHROPIC_MODEL = "claude-sonnet-4-6"
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 MAX_TOKENS = 1024
 MAX_LOOPS = 5
 
@@ -20,8 +21,26 @@ class AssistantDisabled(Exception):
     pass
 
 
+def provider() -> str | None:
+    """Prefer OpenAI if its key is set, else Anthropic, else disabled."""
+    if os.environ.get("OPENAI_API_KEY"):
+        return "openai"
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return "anthropic"
+    return None
+
+
 def is_enabled() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+    return provider() is not None
+
+
+def active_model() -> str:
+    p = provider()
+    if p == "openai":
+        return OPENAI_MODEL
+    if p == "anthropic":
+        return ANTHROPIC_MODEL
+    return "—"
 
 
 def _resolve(name_or_code) -> int | None:
@@ -164,9 +183,30 @@ def _run_tool(name: str, args: dict) -> dict:
     return {"error": f"unknown tool {name}"}
 
 
+# OpenAI function-calling tool schema (converted from the shared TOOLS list)
+OPENAI_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": t["name"],
+            "description": t["description"],
+            "parameters": t["input_schema"],
+        },
+    }
+    for t in TOOLS
+]
+
+
 def chat(user_message: str) -> dict:
-    if not is_enabled():
+    p = provider()
+    if p is None:
         raise AssistantDisabled()
+    if p == "openai":
+        return _chat_openai(user_message)
+    return _chat_anthropic(user_message)
+
+
+def _chat_anthropic(user_message: str) -> dict:
     import anthropic
 
     client = anthropic.Anthropic()
@@ -174,12 +214,12 @@ def chat(user_message: str) -> dict:
     tool_trace = []
     for _ in range(MAX_LOOPS):
         resp = client.messages.create(
-            model=MODEL, max_tokens=MAX_TOKENS, system=SYSTEM,
+            model=ANTHROPIC_MODEL, max_tokens=MAX_TOKENS, system=SYSTEM,
             tools=TOOLS, messages=messages,
         )
         if resp.stop_reason != "tool_use":
             text = "".join(b.text for b in resp.content if b.type == "text")
-            return {"reply": text, "tools_used": tool_trace}
+            return {"reply": text, "tools_used": tool_trace, "provider": "anthropic"}
         messages.append({"role": "assistant", "content": resp.content})
         tool_results = []
         for block in resp.content:
@@ -191,4 +231,39 @@ def chat(user_message: str) -> dict:
                     "content": json.dumps(result, ensure_ascii=False),
                 })
         messages.append({"role": "user", "content": tool_results})
-    return {"reply": "요청을 처리하지 못했습니다. 다시 시도해 주세요.", "tools_used": tool_trace}
+    return {"reply": "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+            "tools_used": tool_trace, "provider": "anthropic"}
+
+
+def _chat_openai(user_message: str) -> dict:
+    from openai import OpenAI
+
+    client = OpenAI()
+    messages: list = [
+        {"role": "system", "content": SYSTEM},
+        {"role": "user", "content": user_message},
+    ]
+    tool_trace = []
+    for _ in range(MAX_LOOPS):
+        resp = client.chat.completions.create(
+            model=OPENAI_MODEL, max_tokens=MAX_TOKENS,
+            tools=OPENAI_TOOLS, messages=messages,
+        )
+        msg = resp.choices[0].message
+        if not msg.tool_calls:
+            return {"reply": msg.content or "", "tools_used": tool_trace,
+                    "provider": "openai"}
+        messages.append(msg.model_dump(exclude_none=True))
+        for tc in msg.tool_calls:
+            try:
+                args = json.loads(tc.function.arguments or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            result = _run_tool(tc.function.name, args)
+            tool_trace.append(tc.function.name)
+            messages.append({
+                "role": "tool", "tool_call_id": tc.id,
+                "content": json.dumps(result, ensure_ascii=False),
+            })
+    return {"reply": "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+            "tools_used": tool_trace, "provider": "openai"}
