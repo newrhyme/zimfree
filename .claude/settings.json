@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Bash(git push --force:*)",
+      "Write(./data/raw/**)",
+      "Edit(./data/raw/**)"
+    ]
+  }
+}
